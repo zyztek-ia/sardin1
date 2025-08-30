@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Backend Flask Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sardin-ai-backend
+    restart: unless-stopped
+    env_file:
+      - ./.env # Load environment variables from .env file
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - sardin-net
+
+  # Frontend Next.js Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sardin-ai-frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Avoids overwriting node_modules with local empty folder
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - sardin-net
+
+  # Nginx Reverse Proxy
+  nginx:
+    build:
+      context: ./docker/nginx
+      # We'll create a simple Dockerfile for nginx to copy the config
+    container_name: sardin-ai-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - sardin-net
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: sardin-ai-db
+    restart: unless-stopped
+    env_file:
+      - ./.env # Load DB credentials from .env file
+    volumes:
+      - ./docker/volumes/postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Expose for local development/debugging if needed
+    networks:
+      - sardin-net
+
+  # Redis Service
+  redis:
+    image: redis:7-alpine
+    container_name: sardin-ai-redis
+    restart: unless-stopped
+    volumes:
+      - ./docker/volumes/redis_data:/data
+    ports:
+      - "6379:6379" # Expose for local development/debugging if needed
+    networks:
+      - sardin-net
+
+networks:
+  sardin-net:
+    driver: bridge
