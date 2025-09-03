@@ -1,3 +1,4 @@
+from flask import current_app
 from backend.main import db
 from backend.app.models.user import User
 
@@ -39,6 +40,7 @@ class UserService:
         db.session.add(new_user)
         db.session.commit()
 
+        current_app.logger.info(f"New user created: {new_user.username} (ID: {new_user.id})")
         return new_user, "User created successfully."
 
     @staticmethod
@@ -56,6 +58,7 @@ class UserService:
             user.set_password(data['password'])
 
         db.session.commit()
+        current_app.logger.info(f"User updated: {user.username} (ID: {user.id})")
         return user, "User updated successfully."
 
     @staticmethod
@@ -65,6 +68,8 @@ class UserService:
         if not user:
             return False, "User not found."
 
+        username = user.username
         db.session.delete(user)
         db.session.commit()
+        current_app.logger.info(f"User deleted: {username} (ID: {user_id})")
         return True, "User deleted successfully."

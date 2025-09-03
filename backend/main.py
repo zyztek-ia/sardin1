@@ -1,4 +1,5 @@
-from flask import Flask
+import logging
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -24,6 +25,19 @@ def create_app(config_name='default'):
     """
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
+
+    # Configure logging
+    if not app.debug and not app.testing:
+        # In production mode, add a handler to send logs to stdout
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s '
+            '[in %(pathname)s:%(lineno)d]'
+        )
+        handler.setFormatter(formatter)
+        app.logger.addHandler(handler)
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('SARDIN-AI startup')
 
     # Initialize extensions with the app
     db.init_app(app)
@@ -51,5 +65,17 @@ def create_app(config_name='default'):
         @app.route('/health')
         def health_check():
             return "OK", 200
+
+        @app.before_request
+        def log_request_info():
+            app.logger.debug('Request Headers: %s', request.headers)
+            app.logger.debug('Request Body: %s', request.get_data())
+            app.logger.info(f"Incoming request: {request.method} {request.path}")
+
+        @app.errorhandler(Exception)
+        def log_unhandled_exception(e):
+            app.logger.error(f"Unhandled Exception: {e}", exc_info=True)
+            # You can also return a generic error response to the client
+            return {"message": "An unexpected error occurred."}, 500
 
     return app
