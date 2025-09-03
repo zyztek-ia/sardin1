@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from celery import Celery
-from backend.config import config_by_name
+from backend.config import config_by_name, Config
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -38,13 +38,13 @@ def create_app(config_name='default'):
     # Register blueprints
     with app.app_context():
         # Import and register blueprints here
-        from .routes.auth import auth_bp
+        from backend.app.routes.auth import auth_bp
         app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
-        from .routes.vessel import vessel_bp
+        from backend.app.routes.vessel import vessel_bp
         app.register_blueprint(vessel_bp, url_prefix='/api/vessels')
 
-        from .routes.users import user_bp
+        from backend.app.routes.users import user_bp
         app.register_blueprint(user_bp, url_prefix='/api/users')
 
         # A simple health check endpoint

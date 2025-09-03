@@ -1,6 +1,5 @@
-from backend.app import db
+from backend.main import db
 from backend.app.models.user import User
-from werkzeug.security import generate_password_hash
 
 class UserService:
     @staticmethod
@@ -11,7 +10,7 @@ class UserService:
     @staticmethod
     def get_user_by_id(user_id):
         """Returns a single user by their ID."""
-        return User.query.get(user_id)
+        return db.session.get(User, user_id)
 
     @staticmethod
     def create_user(data):
@@ -33,9 +32,9 @@ class UserService:
         new_user = User(
             username=username,
             email=email,
-            password_hash=generate_password_hash(password),
             role=role
         )
+        new_user.set_password(password)
 
         db.session.add(new_user)
         db.session.commit()
@@ -54,7 +53,7 @@ class UserService:
         user.role = data.get('role', user.role)
 
         if 'password' in data and data['password']:
-            user.password_hash = generate_password_hash(data['password'])
+            user.set_password(data['password'])
 
         db.session.commit()
         return user, "User updated successfully."

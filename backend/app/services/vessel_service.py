@@ -1,4 +1,4 @@
-from backend.app import db
+from backend.main import db
 from backend.app.models.vessel import Vessel
 
 class VesselService:
@@ -10,7 +10,7 @@ class VesselService:
     @staticmethod
     def get_vessel_by_id(vessel_id):
         """Returns a single vessel by its ID."""
-        return Vessel.query.get(vessel_id)
+        return db.session.get(Vessel, vessel_id)
 
     @staticmethod
     def create_vessel(data, owner_id=None):

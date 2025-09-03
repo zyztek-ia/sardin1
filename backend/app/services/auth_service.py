@@ -1,4 +1,4 @@
-from backend.app import db
+from backend.main import db
 from backend.app.models.user import User
 
 class AuthService:
