@@ -44,6 +44,9 @@ def create_app(config_name='default'):
         from .routes.vessel import vessel_bp
         app.register_blueprint(vessel_bp, url_prefix='/api/vessels')
 
+        from .routes.users import user_bp
+        app.register_blueprint(user_bp, url_prefix='/api/users')
+
         # A simple health check endpoint
         @app.route('/health')
         def health_check():
