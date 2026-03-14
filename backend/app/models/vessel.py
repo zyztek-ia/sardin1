@@ -1,5 +1,5 @@
-from backend.app import db
-import datetime
+from backend.main import db
+from datetime import datetime, timezone
 
 class Vessel(db.Model):
     __tablename__ = 'vessels'
@@ -14,8 +14,8 @@ class Vessel(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     owner = db.relationship('User', backref=db.backref('vessels', lazy=True))
 
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
         return f'<Vessel {self.name} (MMSI: {self.mmsi})>'

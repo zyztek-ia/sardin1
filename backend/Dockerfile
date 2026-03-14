@@ -24,11 +24,11 @@ COPY . .
 EXPOSE 5000
 
 # Define environment variables (can be overridden in docker-compose)
-ENV FLASK_APP=app.py
+ENV FLASK_APP=main.py
 ENV FLASK_RUN_HOST=0.0.0.0
 # Note: For production, you might want to set FLASK_ENV=production
 
-# Run app.py when the container launches
+# Run main.py when the container launches
 # Use gunicorn for a production-ready server
 # The number of workers can be tuned based on the server's CPU cores
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "backend.app:create_app()"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "backend.main:create_app()"]
